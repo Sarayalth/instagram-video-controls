@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Instagram Video Controls
 // @namespace    instagram_video
-// @version      0.2.6
+// @version      0.2.7
 // @description  Adds standart video controls for video in Instagram
 // @homepageURL  https://github.com/Sarayalth/instagram-video-controls
 // @supportURL   https://github.com/Sarayalth/instagram-video-controls/issues
@@ -20,35 +20,37 @@
         mutations = Array.from(mutations);
 
         function videoClassCount(removedNodes) {
-            return Array.from(removedNodes)
-                .filter(node => node.classList && node.classList.contains('_ab1e')).length;  //img._ab1e = thumbnail
+            var videoCount = Array.from(removedNodes).filter(node => node.classList && node.classList.contains('x10l6tqk')).length;
+            //console.log(removedNodes)
+            //console.log(videoCount)
+            return videoCount
         }
 
         // Check for the play button to be removed, i.e. the video is being played
-        let videoMutations = mutations
-            .filter(m => m.removedNodes && videoClassCount(m.removedNodes) > 0);
+        let videoMutations = mutations.filter(m => m.removedNodes && videoClassCount(m.removedNodes) > 0);
         if(videoMutations.length === 0) return;
+        //console.log("brrrr")
 
         videoMutations.forEach(m => {
             // The <video/> element should be before the removed button
-            var video = m.previousSibling;
+            var videoParent = m.target.closest('.xh8yej3.x1uhb9sk.x5yr21d');
+            var video = videoParent.querySelector('video')
             if (video && video.tagName && video.tagName.toLowerCase() == 'video') {
                 if (!video.controls) {
 
                     // Add native video controls
                     video.controls = 'controls';
 
-                    // Remove overlay and volume button
-                    let article = video.closest('article');
-                    console.log(article);
-                    article.querySelectorAll('._aakh, ._aakl, ._ab8k._ab8v._ab8w._ab94._ab99._ab9f._ab9m._ab9p._abam._abbk._ab9y._aba8').forEach(trash => {
-                        trash.remove();
-                    });
-
                     // Move tags to upper corner
-                    article.querySelectorAll('._a9-5._a9-6._a9-7').forEach(tags => {
+                    videoParent.querySelectorAll('._a9-5._a9-6._a9-7').forEach(tags => {
+                        videoParent.appendChild(tags);
                         tags.style.bottom = "auto";
                         tags.style.top = "0";
+                    });
+
+                    // Remove overlay and volume button
+                    videoParent.querySelectorAll('[data-instancekey]').forEach(trash => {
+                        trash.remove();
                     });
 
                     // Keep volume value in localStorage
